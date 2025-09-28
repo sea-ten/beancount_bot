@@ -21,7 +21,54 @@
 ### 通过 Pip (Pypi)
 
 ```shell
-pip install beancount_bot
+pip install python-telegram-bot==21.4
+pip install "python-telegram-bot[job-queue]"
+pip install beancount_bot  #通过该方法下载到原始的代码，再替换成本仓库对应的修改过的文件（bot.py main.py session_config.py task.py util.py）
+
+```
+
+另外还要修改`/usr/local/bin/beancount_bot` 文件
+```shell
+#from beancount_bot import main #这是原来的条目
+from beancount_bot.main import main  #修改为这个条目
+
+```
+
+然后去到包含`beancount_bot.yml`、  `bot.session`、  `costflow.json`、  `template.yml`的目录运行beancount_bot即可。
+
+最后配置一个新增一个 `/etc/systemd/system/beancount_bot.service`
+
+```
+[Unit]
+Description=Beancount Bot Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/data/bean/config/
+ExecStart=/usr/local/bin/beancount_bot
+
+
+Restart=always
+RestartSec=10
+
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/install/nodejs/node-v22.9.0/bin"
+#如果 NodeJS 没有配置到默认环境变量里面，就需要补充，可通过echo $PATH查看nodejs的环境
+
+StandardOutput=file:/var/log/beancount/bot.log
+StandardError=file:/var/log/beancount/bot.error.log
+
+
+[Install]
+WantedBy=multi-user.target
+
+```
+再通过配置守护进程
+
+```shell
+sudo systemctl daemon-reload
+sudo systemctl start beancount_bot
+sudo systemctl beancount_bot
 ```
 
 ### 通过 Docker
