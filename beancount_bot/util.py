@@ -1,10 +1,10 @@
 import sys
 
-import telebot
+import logging
 
 from beancount_bot.i18n import _
 
-logger = telebot.logger
+logger = logging.getLogger(__name__)
 
 
 def load_class(classname: str) -> type:
