@@ -1,6 +1,9 @@
 from typing import Dict
 
-from telebot import TeleBot
+# 移除 from telebot import TeleBot
+# 导入 telegram 的类型
+from telegram import Update
+from telegram.ext import ContextTypes
 
 from beancount_bot.config import get_config
 from beancount_bot.i18n import _
@@ -11,11 +14,11 @@ from beancount_bot.util import stringify_tags
 class SessionSpecificConfig:
     """与特定 session 相关的配置"""
 
-    def get(self, cmd, bot: TeleBot, message):
+    async def get(self, cmd: str, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """获取当前配置内容的指令"""
         pass
 
-    def set(self, cmd, bot: TeleBot, message):
+    async def set(self, cmd: str, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """设置当前配置的指令"""
         pass
 
@@ -66,22 +69,25 @@ class TagsConfig(SessionSpecificConfig):
         return '', _('获取添加于交易的标签'), \
                _('[标签列表]'), _('设置当前用户的标签。多个标签使用空格隔开，为空则表示清空。')
 
-    def get(self, cmd, bot, message):
+    async def get(self, cmd: str, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """显示所有标签"""
+        user_id = update.effective_user.id
         global_tags = get_config('transaction.tags', [])
-        session_tags = get_session(bot.session_user_id, SESS_TX_TAGS, [])
-        bot.reply_to(message,
-                     _("全局标签：{global_tags}\n"
-                       "当前用户标签：{session_tags}\n"
-                       "可以通过 /set tags [标签列表] 设置当前用户的标签。")
-                     .format(global_tags=stringify_tags(global_tags, human_readable=True),
-                             session_tags=stringify_tags(session_tags, human_readable=True)))
+        session_tags = get_session(user_id, SESS_TX_TAGS, [])
+        await update.message.reply_text(
+            _("全局标签：{global_tags}\n"
+              "当前用户标签：{session_tags}\n"
+              "可以通过 /set tags [标签列表] 设置当前用户的标签。")
+            .format(global_tags=stringify_tags(global_tags, human_readable=True),
+                    session_tags=stringify_tags(session_tags, human_readable=True))
+        )
 
-    def set(self, cmd, bot, message):
+    async def set(self, cmd: str, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """设置标签"""
+        user_id = update.effective_user.id
         tags = list(set(cmd.split()))
-        set_session(bot.session_user_id, SESS_TX_TAGS, tags)
-        bot.reply_to(message, _("成功设置用户标签！"))
+        set_session(user_id, SESS_TX_TAGS, tags)
+        await update.message.reply_text(_("成功设置用户标签！"))
 
 
 register_session_config('tags', TagsConfig())
