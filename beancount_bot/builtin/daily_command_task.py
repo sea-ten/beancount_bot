@@ -27,10 +27,10 @@ class DailyCommandTask(ScheduleTask):
     def register(self, fire: callable):
         schedule.every().day.at(self.time).do(fire)
 
-    def trigger(self, bot: TeleBot):
-        # 执行指令
-        for cmd in self.commands:
-            os.system(cmd)
-        # 发送信息
-        for uid in all_user():
-            bot.send_message(uid, self.message)
+    # def trigger(self, bot: TeleBot):
+    #     # 执行指令
+    #     for cmd in self.commands:
+    #         os.system(cmd)
+    #     # 发送信息
+    #     for uid in all_user():
+    #         bot.send_message(uid, self.message)
