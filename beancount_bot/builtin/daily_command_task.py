@@ -2,7 +2,7 @@ import os
 from typing import List
 
 import schedule
-from telebot import TeleBot
+#from telebot import TeleBot
 
 from beancount_bot.session import all_user
 from beancount_bot.task import ScheduleTask
